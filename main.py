@@ -17,7 +17,7 @@ dp.message.middleware(ChatActionMiddleware())
 
 
 async def main():
-    get_google_sheets_service()
+    # get_google_sheets_service()
     await bot.set_my_commands(
         [   
             types.BotCommand(command="start", description="Главное меню бота"),

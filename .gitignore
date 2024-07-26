@@ -6,3 +6,4 @@ token_2.json:Zone.Identifier
 /home/vladislav94/.config/gcloud/application_default_credentials.jsonq
 __pycache__/
 application_default_credentials.json
+service_account_creds.json
