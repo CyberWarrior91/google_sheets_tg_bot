@@ -18,6 +18,7 @@ class User(Base):
     __tablename__ = "user"
 
     telegram_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    access_token: Mapped[str] = mapped_column(String, default=None, nullable=True)
     spreadsheets: Mapped[List[Spreadsheet]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
