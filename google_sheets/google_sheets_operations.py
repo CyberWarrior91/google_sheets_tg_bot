@@ -1,16 +1,11 @@
-import os.path
 import datetime
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from google_sheets.oauth import SCOPES, authorize_google_sheets
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow, Flow
-import os
+from .oauth import SCOPES
 from google.oauth2.credentials import Credentials
-from google.auth.exceptions import RefreshError
+from database.db_crud_operations import check_user_in_db
 
-# SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 # def authorize_google_sheets():
 #     """Initiates the Google Sheets API authorization flow."""
@@ -41,18 +36,21 @@ from google.auth.exceptions import RefreshError
 #             token.write(creds.to_json())
 #     return creds 
 
-def get_google_sheets_service():
+async def get_google_sheets_service(user_telegram_id: int):
     """Returns a Google Sheets API service object."""
-    creds = authorize_google_sheets()
-    print(creds)
-    return build('sheets', 'v4', credentials=creds)
+    user = await check_user_in_db(user_telegram_id)
+    if user and user.access_token:
+      creds = Credentials.from_authorized_user_file(user.access_token, SCOPES)
+      print(creds)
+      return build('sheets', 'v4', credentials=creds)
+    return None
 
-def create_new_spreadsheet(title: str) -> str|None:
+async def create_new_spreadsheet(user_id: int, title: str) -> str|None:
   """Creates new spreadsheet in Google Sheets service with a specified name"""
   """Also, adds a first line for the table in the first sheet, makes it bold"""
   """and renames it with the current month and year by this sample: '01/2000'"""
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     spreadsheet = {"properties": {"title": title}}
     spreadsheet = (
         service.spreadsheets()
@@ -75,16 +73,16 @@ def create_new_spreadsheet(title: str) -> str|None:
     )
     body = {"requests": requests}
     service.spreadsheets().batchUpdate(spreadsheetId=new_spreadsheet_id, body=body).execute()
-    fill_first_row(new_spreadsheet_id)
-    bold_first_row(spreadsheet_id=new_spreadsheet_id)
+    await fill_first_row(user_id, new_spreadsheet_id)
+    await bold_first_row(user_id, new_spreadsheet_id)
     return new_spreadsheet_id
   except HttpError as error:
     print(f"An error occurred: {error}")
     return error
 
-def bold_first_row(spreadsheet_id: str, sheet_id: int = 0):
+async def bold_first_row(user_id: int, spreadsheet_id: str, sheet_id: int = 0):
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     requests = [
       {
         "updateCells": {
@@ -120,9 +118,9 @@ def bold_first_row(spreadsheet_id: str, sheet_id: int = 0):
     return error
 
 
-def fill_first_row(spreadsheet_id: str, sheet_name: str = ''):
+async def fill_first_row(user_id: int, spreadsheet_id: str, sheet_name: str = ''):
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     values = ["Дата", "Расход", "Сумма", "Всего за месяц"]
     data = [
         {"range": f"{sheet_name}!A1:C1", "values": [values[:-1]]},
@@ -145,9 +143,9 @@ def fill_first_row(spreadsheet_id: str, sheet_name: str = ''):
     print(f"An error occurred: {error}")
     return error
 
-def get_spreadsheet_url(spreadsheet_id: str):
+async def get_spreadsheet_url(user_id: int, spreadsheet_id: str):
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     result = (
         service.spreadsheets()
         .get(spreadsheetId=spreadsheet_id)
@@ -158,10 +156,10 @@ def get_spreadsheet_url(spreadsheet_id: str):
     print(f"An error occurred: {error}")
     return error
   
-def change_spreadsheet_name(spreadsheet_id: str, title: str):
+async def change_spreadsheet_name(user_id: int, spreadsheet_id: str, title: str):
   """Changes the title of a spreadsheet"""
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     requests = []
     requests.append(
         {
@@ -180,7 +178,8 @@ def change_spreadsheet_name(spreadsheet_id: str, title: str):
     print(f"An error occurred: {error}")
     return error
 
-def append_new_values(
+async def append_new_values(
+    user_id: int,
     spreadsheet_id: str, 
     values_list: list,
     sheet_name: str,
@@ -188,7 +187,7 @@ def append_new_values(
     ):
   """Adds a list of values to the specified range of a sheet"""
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     date = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
     values_list.insert(0, date)
     body = {"values": [values_list]}
@@ -209,10 +208,10 @@ def append_new_values(
     print(f"An error occurred: {error}")
     return error
 
-def create_new_sheet(spreadsheet_id: str, title: str):
+async def create_new_sheet(user_id: int, spreadsheet_id: str, title: str):
   """Creates new sheet for a specified spreadsheet"""
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     requests = []
     requests.append(
         {
@@ -229,8 +228,8 @@ def create_new_sheet(spreadsheet_id: str, title: str):
     )
     result = response.get("replies")[0].get('addSheet').get('properties')
     sheet_id, sheet_name = result.get("sheetId", None), result.get("title", None)
-    fill_first_row(spreadsheet_id=spreadsheet_id, sheet_name=sheet_name)
-    bold_first_row(spreadsheet_id=spreadsheet_id, sheet_id=sheet_id)
+    await fill_first_row(user_id, spreadsheet_id=spreadsheet_id, sheet_name=sheet_name)
+    await bold_first_row(user_id, spreadsheet_id=spreadsheet_id, sheet_id=sheet_id)
     print(f"Sheet {sheet_id} added")
     print(f"Sheet name is {sheet_name}")
     return sheet_id, sheet_name
@@ -238,10 +237,10 @@ def create_new_sheet(spreadsheet_id: str, title: str):
     print(f"An error occurred: {error}")
     return error
 
-def get_sheet(spreadsheet_id):
+async def get_sheet(user_id: int, spreadsheet_id: str):
   """Gets the first default sheet of a spreadsheet"""
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     result = (
         service.spreadsheets()
         .get(spreadsheetId=spreadsheet_id)
@@ -258,9 +257,9 @@ def get_sheet(spreadsheet_id):
     print(f"An error occurred: {error}")
     return error
 
-def show_this_month_expenses(spreadsheet_id: str, sheet_name: str):
+async def show_this_month_expenses(user_id: int, spreadsheet_id: str, sheet_name: str):
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     result = (
         service.spreadsheets()
         .values()
@@ -277,9 +276,9 @@ def show_this_month_expenses(spreadsheet_id: str, sheet_name: str):
     print(f"An error occurred: {error}")
     return error
   
-def show_last_ten_expenses(spreadsheet_id: str, sheet_name: str) -> str|None:
+async def show_last_ten_expenses(user_id: int, spreadsheet_id: str, sheet_name: str) -> str|None:
   try:
-    service = get_google_sheets_service()
+    service = await get_google_sheets_service(user_id)
     try:
       result = (
           service.spreadsheets()
@@ -303,13 +302,13 @@ def show_last_ten_expenses(spreadsheet_id: str, sheet_name: str) -> str|None:
     print(f"An error occurred: {error}")
     return error
   
-def delete_spreadsheet(spreadsheet_id: str):
+async def delete_spreadsheet_from_sheets(user_id: int, spreadsheet_id: str):
   # Since Sheets API doesn't allow us to remove a spreadsheet directly,
   # We will use Google Drive API to remove the file from user's account.
   try:
-    creds = None
-    if os.path.exists("token.json"):
-      creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+    user = await check_user_in_db(user_id)
+    if user and user.access_token:
+      creds = Credentials.from_authorized_user_file(user.access_token, SCOPES)
       drive_service = build('drive', 'v3', credentials=creds)
       drive_service.files().delete(fileId=spreadsheet_id).execute()
       print("The spreadsheet was deleted successfully")
@@ -321,5 +320,5 @@ def delete_spreadsheet(spreadsheet_id: str):
       print(f"An error occurred: {error}")
       return error
 
-if __name__ == "__main__":
-  get_google_sheets_service()
+# if __name__ == "__main__":
+#   asyncio.run(get_google_sheets_service())

@@ -94,7 +94,8 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
     sheets = await get_sheets_by_spreadsheet_id(s_id=base_spreadsheet_id)
     todays_month_and_year = datetime.datetime.today().strftime("%m/%Y")
     if todays_month_and_year not in sheets:
-        sheet_id, sheet_name = create_new_sheet(
+        sheet_id, sheet_name = await create_new_sheet(
+            message.from_user.id,
             spreadsheet_id=base_spreadsheet_id,
             title=todays_month_and_year
         )
@@ -104,7 +105,8 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
             name=sheet_name, 
             spreadsheet_id=base_spreadsheet_id
         )
-    append_new_values(
+    await append_new_values(
+        message.from_user.id,
         spreadsheet_id=base_spreadsheet_id, 
         values_list=[user_data.get("expense_item", ""),
         user_data.get("expense_amount", "")],
@@ -113,6 +115,7 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
     await message.answer(
         'Статья расходов была успешно добавлена!\n\n'
         'Чтобы посмотреть последние 10 расходов, отправьте команду /last_ten_expenses\n'
+        'Чтобы посмотреть расходы за этот месяц, отправьте команду /this_month_expenses\n'
         'Чтобы добавить еще один расход, вызовите команду /add_expense\n'
     )
     await state.clear()
@@ -142,12 +145,16 @@ async def view_last_ten_expenses_success(message: types.Message, state: FSMConte
     table_id = await get_spreadsheet_id_by_name(name=message.text)
     if table_id:
         sheets = await get_sheets_by_spreadsheet_id(s_id=table_id)
-        result = show_last_ten_expenses(table_id, sheet_name=sheets[-1])
+        result = await show_last_ten_expenses(
+            message.from_user.id,
+            table_id, 
+            sheet_name=sheets[-1]
+        )
         if result is None:
             await message.answer("По этой таблице пока нет расходов!")
             return
         await message.answer(
-             f'Вот ваши транзакции за последние 10 дней:\n\n{result}'
+             f'Вот ваши последние 10 транзакций в этом месяце:\n\n{result}'
         )
         await state.clear()
     else:
@@ -175,7 +182,11 @@ async def view_this_month_expenses_success(message: types.Message, state: FSMCon
     table_id = await get_spreadsheet_id_by_name(name=message.text)
     if table_id:
         sheets = await get_sheets_by_spreadsheet_id(s_id=table_id)    
-        result = show_this_month_expenses(table_id, sheet_name=sheets[-1])
+        result = await show_this_month_expenses(
+            message.from_user.id,
+            table_id, 
+            sheet_name=sheets[-1]
+        )
         await message.answer(
              f"Ваши расходы за этот месяц: {result}"
         )

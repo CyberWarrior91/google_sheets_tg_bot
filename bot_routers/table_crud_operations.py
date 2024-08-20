@@ -2,8 +2,20 @@ from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters.command import Command
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.utils.markdown import hlink
+from google_sheets.google_sheets_operations import (
+    create_new_spreadsheet, 
+    get_spreadsheet_url,
+    change_spreadsheet_name,
+    delete_spreadsheet_from_sheets,
+    get_sheet
+)
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from .utils import (
+    table_name_false_input,
+    CANCEL_MESSAGE,
+    show_tables_as_reply
+)
 from database.db_crud_operations import (
     add_spreadsheet_to_db,
     add_sheet_to_db,
@@ -13,20 +25,6 @@ from database.db_crud_operations import (
     get_spreadsheet_id_by_name,
     edit_spreadsheet_name_in_db,
     delete_spreadsheet_from_db
-)
-from google_sheets.google_sheets_operations import (
-    create_new_spreadsheet, 
-    get_spreadsheet_url,
-    change_spreadsheet_name,
-    delete_spreadsheet,
-    get_sheet
-)
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from .utils import (
-    bot,
-    table_name_false_input,
-    CANCEL_MESSAGE,
-    show_tables_as_reply
 )
 
 router = Router()
@@ -56,10 +54,6 @@ async def table_command(message: types.Message):
     builder.row(
         types.InlineKeyboardButton(text="Удалить таблицу", callback_data="delete_table")
     )
-    # flow = authorize_google_sheets()
-    # if isinstance(flow, InstalledAppFlow):
-    #     url = flow.authorization_url()[0]
-    #     await message.answer(f"Пожалуйста, авторизуйтесь в сервисе Google Sheets для продолжения:\n\n {url}")
     await message.reply("Выберите, что хотите сделать:", reply_markup=builder.as_markup())
 
 @router.callback_query(F.data == "add_table")
@@ -77,19 +71,18 @@ async def parse_title(message: types.Message, state: FSMContext):
         await message.answer("Слишком длинное название для таблицы!\n"
                              "Пожалуйста, придумайте имя покороче (до 35 символов)")
         return
-    await bot.send_chat_action(chat_id=message.chat.id, action="TYPING")
-    spreadsheet_id = create_new_spreadsheet(title=title)
     user_id = message.from_user.id
+    spreadsheet_id = await create_new_spreadsheet(user_id, title=title)
     if await check_user_in_db(user_id) is None:
         await add_user_to_db(telegram_id=user_id)
     await add_spreadsheet_to_db(
-        google_unique_id=spreadsheet_id, 
+        google_unique_id=spreadsheet_id,
         name=title,
         user_telegram_id=user_id
     )
-    sheet_id, sheet_name = get_sheet(spreadsheet_id)
+    sheet_id, sheet_name = await get_sheet(user_id, spreadsheet_id)
     await add_sheet_to_db(google_unique_id=sheet_id, name=sheet_name, spreadsheet_id=spreadsheet_id)
-    table_url = get_spreadsheet_url(spreadsheet_id)
+    table_url = await get_spreadsheet_url(user_id, spreadsheet_id)
     hyper_link = hlink("ссылка", table_url)
     await message.answer(
         f'Название таблицы: "{title}". Таблица сохранена!\n\n'
@@ -100,14 +93,6 @@ async def parse_title(message: types.Message, state: FSMContext):
         parse_mode="HTML"
     )
     await state.set_state(state=None)
-
-def create_builder(spreadsheets):
-    builder = ReplyKeyboardBuilder()
-    for s_name in spreadsheets:
-        builder.add(types.KeyboardButton(text=str(s_name)))
-    builder.adjust(3)
-    return builder
-
 
 @router.callback_query(F.data == "edit_table")
 async def change_table_title_start(callback: types.CallbackQuery, state: FSMContext):
@@ -153,7 +138,7 @@ async def change_title_success(message: types.Message, state: FSMContext):
         user_data = await state.get_data()
         await message.answer(f'Новое имя для таблицы: "{new_title}"')
         s_id = user_data["spreadsheet_id"]
-        change_spreadsheet_name(s_id, new_title)
+        await change_spreadsheet_name(message.from_user.id, s_id, new_title)
         await edit_spreadsheet_name_in_db(id=s_id, new_name=new_title)
         await message.answer(f'Таблица была успешно переименована!')
         await message.answer(
@@ -184,15 +169,13 @@ async def view_expense_table(message: types.Message, state: FSMContext):
     table_name = message.text
     spreadsheet_id = await get_spreadsheet_id_by_name(name=table_name)
     if spreadsheet_id:
-        table_url = get_spreadsheet_url(spreadsheet_id)
+        table_url = await get_spreadsheet_url(message.from_user.id, spreadsheet_id)
         hyper_link = hlink("ссылка", table_url)
         msg = f'Вот ваша {hyper_link} на таблицу!'
         await message.answer(msg, parse_mode="HTML")
         await state.clear()
     else:
         await table_name_false_input(message, state)
-    
-
 
 @router.callback_query(F.data == "delete_table")
 async def delete_table_start(callback: types.CallbackQuery, state: FSMContext):
@@ -242,7 +225,7 @@ async def delete_yes_answer(callback: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     spreadsheet_id = await get_spreadsheet_id_by_name(user_data["table"])
     if await delete_spreadsheet_from_db(spreadsheet_id) is True:
-        if delete_spreadsheet(spreadsheet_id) is True:
+        if await delete_spreadsheet_from_sheets(callback.from_user.id, spreadsheet_id) is True:
             await callback.message.answer("Таблица была успешно удалена!")
         else:
             await callback.message.answer(

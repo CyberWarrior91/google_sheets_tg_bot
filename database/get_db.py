@@ -8,23 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = URL.create(
-    "postgresql+asyncpg",
-    username=os.environ.get('PSQL_LOGIN'),
-    password=os.environ.get('PSQL_PASS'),
-    host=os.environ.get('PSQL_HOST'),
-    port=os.environ.get('PSQL_PORT'),
-    database=os.environ.get('PSQL_DB_NAME'),
-)
-
-# async def create_tables():
-#     engine = create_async_engine(DATABASE_URL)
-#     async with engine.begin() as conn:
-#         await conn.run_sync(Base.metadata.drop_all)
-#         await conn.run_sync(Base.metadata.create_all)
-#         print("Tables created successfully.")
-#     await engine.dispose()
-
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 async def get_async_session():
   """
@@ -37,6 +21,7 @@ async def get_async_session():
   async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
   
   async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
   async with async_session() as session:

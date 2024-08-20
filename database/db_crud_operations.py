@@ -21,6 +21,18 @@ async def check_user_in_db(telegram_id: int):
         user = user_in_db.first()
         return user if user else None
 
+async def add_token_to_user(telegram_id: int, token: str):
+    async for session in get_async_session():
+        user_in_db = await session.scalars(
+            select(User).where(
+                User.telegram_id==telegram_id)
+        )
+        user = user_in_db.first()
+        user.access_token = token
+        await session.commit()
+        print("The token was added successfully")
+        return user
+
 async def add_spreadsheet_to_db(google_unique_id: str, name: str, user_telegram_id: int):
     async for session in get_async_session():
         new_spdsheet = Spreadsheet(
@@ -75,7 +87,7 @@ async def get_spreadsheet_id_by_name(name: str):
             return spreadsheet.google_unique_id
         return None
 
-async def edit_spreadsheet_name_in_db(id, new_name: str):
+async def edit_spreadsheet_name_in_db(id: str, new_name: str):
     async for session in get_async_session():
         s_in_db = await session.scalars(select(Spreadsheet).where(Spreadsheet.google_unique_id==id))
         spreadsheet = s_in_db.first()

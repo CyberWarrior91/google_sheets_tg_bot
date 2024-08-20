@@ -8,12 +8,10 @@ from typing import Optional, List
 
 from sqlalchemy.orm import relationship
 
-# declarative base class
 class Base(DeclarativeBase):
     pass
 
 
-# an example mapping using the base
 class User(Base):
     __tablename__ = "user"
 
@@ -47,4 +45,3 @@ class Sheet(Base):
     __mapper_args__ = {
         "polymorphic_identity": "sheet",
     }
-

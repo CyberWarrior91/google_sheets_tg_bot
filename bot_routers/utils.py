@@ -1,17 +1,19 @@
 from aiogram import types, Bot
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.state import StatesGroup
 from dotenv import load_dotenv
 import os
 from typing import List
 
 load_dotenv()
 
+
 BOT_TOKEN = os.getenv("BOT_TOKEN", None)
 bot = Bot(token=BOT_TOKEN)
 
 CANCEL_MESSAGE = 'Для отмены действия отправьте команду /cancel или напишите слово "отмена"'
+
 
 def create_builder(spreadsheets: List[str]):
     builder = ReplyKeyboardBuilder()
