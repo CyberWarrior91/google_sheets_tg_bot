@@ -5,7 +5,7 @@ services:
     plan: free
     name: fastapi_app
     runtime: python
-    repo: https://github.com/CyberWarrior91/google_sheets_tg_bot/
+    repo: https://github.com/CyberWarrior91/google_sheets_tg_bot.git
     buildCommand: "./docker/app_build.sh"
     startCommand: "./docker/app.sh"
     envVars:
