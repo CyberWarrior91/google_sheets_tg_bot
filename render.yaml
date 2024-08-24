@@ -3,17 +3,27 @@
 services:
   - type: web # A Python web service named django-app running on a free instance
     plan: free
-    name: django-app
+    name: fastapi_app
     runtime: python
-    repo: https://github.com/render-examples/django.git
-    buildCommand: "./build.sh"
-    startCommand: "python -m gunicorn mysite.asgi:application -k uvicorn.workers.UvicornWorker"
+    repo: https://github.com/CyberWarrior91/google_sheets_tg_bot/
+    buildCommand: "./docker/app_build.sh"
+    startCommand: "./docker/app.sh"
     envVars:
       - key: DATABASE_URL # Sets DATABASE_URL to the connection string of the django-app-db database
         fromDatabase:
-          name: django-app-db
+          name: google_bot_db
           property: connectionString
+      - key: FASTAPI_HOST
+        value: https://google-sheets-tg-bot.onrender.com
+      - key: OAUTHLIB_INSECURE_TRANSPORT
+        value: 0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: BOT_URL
+        sync: false
+      - key: DEBUG
+        value: false
 
 databases:
-  - name: django-app-db # A PostgreSQL database named django-app-db running on a free instance
+  - name: google_bot_db # A PostgreSQL database named django-app-db running on a free instance
     plan: free
