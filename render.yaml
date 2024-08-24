@@ -24,6 +24,21 @@ services:
       - key: DEBUG
         value: false
 
+  - type: web
+    plan: free
+    name: telegram_bot
+    runtime: python
+    repo: https://github.com/CyberWarrior91/google_sheets_tg_bot.git
+    buildCommand: "./docker/app_build.sh"
+    startCommand: "./docker/bot.sh"
+    envVars:
+      - key: DATABASE_URL # Sets DATABASE_URL to the connection string of the django-app-db database
+        fromDatabase:
+          name: google_bot_db
+          property: connectionString
+      - key: BOT_TOKEN
+        sync: false
+      
 databases:
   - name: google_bot_db # A PostgreSQL database named django-app-db running on a free instance
     plan: free
