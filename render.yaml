@@ -41,4 +41,4 @@ services:
       
 databases:
   - name: google_bot_db # A PostgreSQL database named django-app-db running on a free instance
-    plan: starter
+    plan: free
