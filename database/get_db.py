@@ -1,7 +1,7 @@
 import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.engine import URL
+from sqlalchemy import URL, create_engine
 import os
 from .models import Base
 from dotenv import load_dotenv
@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+ASYNC_DATABASE_URL = os.getenv("ASYNC_DATABASE_URL")
 
 async def get_async_session():
   """
@@ -17,7 +18,7 @@ async def get_async_session():
   Returns:
     An SQLAlchemy session object.
   """
-  engine = create_async_engine(DATABASE_URL)
+  engine = create_async_engine(ASYNC_DATABASE_URL)
   async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
   
   async with engine.begin() as conn:
@@ -33,3 +34,14 @@ async def get_async_session():
     finally:
         await session.close()
   await engine.dispose()
+
+
+def get_session():
+    engine = create_engine(DATABASE_URL)
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(engine)
+    with Session.begin() as session:
+        yield session
+
+        

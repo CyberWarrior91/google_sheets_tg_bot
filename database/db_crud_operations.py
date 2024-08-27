@@ -1,4 +1,4 @@
-from database.get_db import get_async_session
+from database.get_db import get_async_session, get_session
 from database.models import User, Spreadsheet, Sheet
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
@@ -10,6 +10,16 @@ async def add_user_to_db(telegram_id: int):
         await session.commit()
         print("The user was added successfully")
         return new_user
+
+def check_user_in_database(telegram_id: int):
+    for session in get_session():
+        user_in_db = session.scalars(
+            select(User).where(
+            User.telegram_id==telegram_id
+            ).options(joinedload(User.spreadsheets))
+        )
+        user = user_in_db.first()
+        return user if user else None
 
 async def check_user_in_db(telegram_id: int):
     async for session in get_async_session():

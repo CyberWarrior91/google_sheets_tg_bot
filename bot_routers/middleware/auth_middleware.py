@@ -1,6 +1,6 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Message
-from database.db_crud_operations import check_user_in_db
+from database.db_crud_operations import check_user_in_db, check_user_in_database
 from typing import Callable, Dict, Any, Awaitable
 from aiogram.utils.markdown import hlink
 import os
@@ -36,7 +36,7 @@ class AuthorizationMiddleware(BaseMiddleware):
     async def is_user_authorized(self, user_id: int):
         # Check if the user has an associated access token 
         # Replace this with your database query or token storage mechanism
-        user = await check_user_in_db(telegram_id=user_id)
+        user = check_user_in_database(telegram_id=user_id)
         print(user)
         if not user:
           return None

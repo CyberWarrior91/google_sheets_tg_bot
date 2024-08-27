@@ -44,7 +44,7 @@ services:
     command: ["/code/docker/bot.sh"]
     environment:
       - FASTAPI_HOST=http://127.0.0.1:80
-      - DATABASE_URL=${DATABASE_URL}
+      # - DATABASE_URL=${DATABASE_URL}
       - PGDATA=/var/lib/postgresql/data/pgdata
     depends_on:
     - db
