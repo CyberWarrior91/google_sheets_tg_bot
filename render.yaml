@@ -24,7 +24,7 @@ services:
       - key: DEBUG
         value: false
 
-  - type: web
+  - type: worker
     plan: free
     name: telegram_bot
     runtime: python
