@@ -97,7 +97,7 @@ async def oauth2callback(request: Request):
     add_token_to_user(telegram_id, token_path)
     return HTMLResponse(
       "<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
-      "<a href='https://t.me/dirty_little_email_parser_bot/'>кнопку</a></p>")
+      f"<a href='{BOT_URL}'>кнопку</a></p>")
   return PlainTextResponse("Авторизация неуспешна")
 
 def credentials_to_dict(credentials):
