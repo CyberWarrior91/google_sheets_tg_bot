@@ -1,15 +1,19 @@
 import logging
 import asyncio
-from aiogram import Dispatcher, types
+import os
+from aiogram import Dispatcher, types, Bot
 from bot_routers.table_crud_operations import router as table_router
 from bot_routers.other import router as router_other
 from bot_routers.expense_crud_operations import router as expense_router
 from bot_routers.main_router import router as main_router
-from bot_routers.utils import bot
+# from bot_routers.utils import bot
 from aiogram.utils.chat_action import ChatActionMiddleware
 from bot_routers.middleware.auth_middleware import AuthorizationMiddleware
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
+
+BOT_TOKEN = os.getenv("BOT_TOKEN", None)
+bot = Bot(token=BOT_TOKEN)
 
 dp = Dispatcher()
 dp.message.outer_middleware(AuthorizationMiddleware())
@@ -36,6 +40,7 @@ dp.include_routers(
     expense_router,
     router_other
 )
+
 
 if __name__ == "__main__":
     try:

@@ -38,10 +38,10 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
         reply_markup=types.ReplyKeyboardRemove()
     )
 
-@router.message(F.text, Command("get_deep_link"))
-async def cmd_start(message: types.Message):
-    link = await create_start_link(bot=bot, payload="help")
-    await message.answer(
-        f"Hello, {html.bold(html.quote(message.from_user.username))}! Link: {link}.\n",
-        # f"And your deeplink is here: {deep_link}\n",
-        parse_mode=ParseMode.HTML)
+# @router.message(F.text, Command("get_deep_link"))
+# async def cmd_start(message: types.Message):
+#     link = await create_start_link(bot=bot, payload="help")
+#     await message.answer(
+#         f"Hello, {html.bold(html.quote(message.from_user.username))}! Link: {link}.\n",
+#         # f"And your deeplink is here: {deep_link}\n",
+#         parse_mode=ParseMode.HTML)
