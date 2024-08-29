@@ -20,7 +20,7 @@ from database.db_crud_operations import (
     add_spreadsheet_to_db,
     add_sheet_to_db,
     add_user_to_db, 
-    check_user_in_db,
+    check_user_in_database,
     get_spreadsheets_by_user,
     get_spreadsheet_id_by_name,
     edit_spreadsheet_name_in_db,
@@ -73,7 +73,7 @@ async def parse_title(message: types.Message, state: FSMContext):
         return
     user_id = message.from_user.id
     spreadsheet_id = await create_new_spreadsheet(user_id, title=title)
-    if await check_user_in_db(user_id) is None:
+    if check_user_in_database(user_id) is None:
         await add_user_to_db(telegram_id=user_id)
     await add_spreadsheet_to_db(
         google_unique_id=spreadsheet_id,

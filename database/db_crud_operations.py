@@ -3,11 +3,11 @@ from database.models import User, Spreadsheet, Sheet
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-async def add_user_to_db(telegram_id: int):
-    async for session in get_async_session():
+def add_user_to_db(telegram_id: int):
+    for session in get_session():
         new_user = User(telegram_id=telegram_id)
         session.add(new_user)
-        await session.commit()
+        session.commit()
         print("The user was added successfully")
         return new_user
 
@@ -21,25 +21,25 @@ def check_user_in_database(telegram_id: int):
         user = user_in_db.first()
         return user if user else None
 
-async def check_user_in_db(telegram_id: int):
-    async for session in get_async_session():
-        user_in_db = await session.scalars(
-            select(User).where(
-                User.telegram_id==telegram_id
-                ).options(joinedload(User.spreadsheets))
-        )
-        user = user_in_db.first()
-        return user if user else None
+# async def check_user_in_db(telegram_id: int):
+#     async for session in get_async_session():
+#         user_in_db = await session.scalars(
+#             select(User).where(
+#                 User.telegram_id==telegram_id
+#                 ).options(joinedload(User.spreadsheets))
+#         )
+#         user = user_in_db.first()
+#         return user if user else None
 
-async def add_token_to_user(telegram_id: int, token: str):
-    async for session in get_async_session():
-        user_in_db = await session.scalars(
+def add_token_to_user(telegram_id: int, token: str):
+    for session in get_session():
+        user_in_db = session.scalars(
             select(User).where(
                 User.telegram_id==telegram_id)
         )
         user = user_in_db.first()
         user.access_token = token
-        await session.commit()
+        session.commit()
         print("The token was added successfully")
         return user
 

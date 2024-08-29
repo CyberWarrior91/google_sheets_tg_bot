@@ -1,6 +1,6 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Message
-from database.db_crud_operations import check_user_in_db, check_user_in_database
+from database.db_crud_operations import  check_user_in_database
 from typing import Callable, Dict, Any, Awaitable
 from aiogram.utils.markdown import hlink
 import os

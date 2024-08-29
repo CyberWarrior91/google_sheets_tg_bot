@@ -9,7 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from fastapi.requests import Request
 from dotenv import load_dotenv
 from database.db_crud_operations import (
-    check_user_in_db, 
+    check_user_in_database, 
     add_user_to_db,
     add_token_to_user
 )
@@ -88,13 +88,13 @@ async def oauth2callback(request: Request):
   request.session['credentials'] = credentials_to_dict(credentials)
   telegram_id = int(request.session["telegram_id"])
   if telegram_id:
-    user = await check_user_in_db(telegram_id)
+    user = check_user_in_database(telegram_id)
     if not user:
-      user = await add_user_to_db(telegram_id=int(telegram_id))
+      user = add_user_to_db(telegram_id=int(telegram_id))
     token_path = f"database/users_tokens/{telegram_id}.json"
     with open(f"{token_path}", "w") as token:
       token.write(credentials.to_json())
-    await add_token_to_user(telegram_id, token_path)
+    add_token_to_user(telegram_id, token_path)
     return HTMLResponse(
       "<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
       "<a href='https://t.me/dirty_little_email_parser_bot/'>кнопку</a></p>")
