@@ -38,6 +38,8 @@ services:
           property: connectionString
       - key: BOT_TOKEN
         sync: false
+      - key: BOT_URL
+        sync: false
       
 databases:
   - name: google_bot_db # A PostgreSQL database named django-app-db running on a free instance
