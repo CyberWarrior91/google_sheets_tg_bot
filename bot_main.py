@@ -13,14 +13,15 @@ from bot_routers.middleware.auth_middleware import AuthorizationMiddleware
 logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", None)
-bot = Bot(token=BOT_TOKEN)
 
-dp = Dispatcher()
-dp.message.outer_middleware(AuthorizationMiddleware())
-dp.message.middleware(ChatActionMiddleware())
 
 
 async def main():
+    bot = Bot(token=BOT_TOKEN)
+
+    dp = Dispatcher()
+    dp.message.outer_middleware(AuthorizationMiddleware())
+    dp.message.middleware(ChatActionMiddleware())
     await bot.set_my_commands(
         [   
             types.BotCommand(command="start", description="Главное меню бота"),
@@ -34,12 +35,12 @@ async def main():
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
-dp.include_routers(
-    main_router, 
-    table_router,
-    expense_router,
-    router_other
-)
+    dp.include_routers(
+        main_router, 
+        table_router,
+        expense_router,
+        router_other
+    )
 
 
 if __name__ == "__main__":
