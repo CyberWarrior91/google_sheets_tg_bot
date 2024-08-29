@@ -1,0 +1,1 @@
+Users tokens obtained after authorization in Google will be stored in this directory
