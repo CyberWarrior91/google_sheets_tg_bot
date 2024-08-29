@@ -10,4 +10,3 @@ application_default_credentials.json
 service_account_creds.json
 *.json
 flask_test.py
-users_tokens
