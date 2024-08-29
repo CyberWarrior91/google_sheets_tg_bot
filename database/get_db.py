@@ -38,7 +38,7 @@ async def get_async_session():
 
 def get_session():
     engine = create_engine(DATABASE_URL)
-    Base.metadata.drop_all(engine)
+    # Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     Session = sessionmaker(engine)
     with Session.begin() as session:
