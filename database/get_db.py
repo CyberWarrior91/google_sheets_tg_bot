@@ -42,6 +42,12 @@ def get_session():
     Base.metadata.create_all(engine)
     Session = sessionmaker(engine)
     with Session.begin() as session:
-        yield session
-
+      try:
+          yield session
+      except Exception as e:
+        print(e)
+        session.rollback()
+      finally:
+        session.close()
+    engine.dispose()
         
