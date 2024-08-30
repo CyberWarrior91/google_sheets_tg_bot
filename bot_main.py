@@ -1,6 +1,10 @@
 import logging
 import asyncio
 import os
+from aiogram import types, F, html
+from aiogram.filters.command import Command
+from aiogram.utils.deep_linking import create_start_link
+from aiogram.enums.parse_mode import ParseMode
 from aiogram import Dispatcher, types, Bot
 from bot_routers.table_crud_operations import router as table_router
 from bot_routers.other import router as router_other
@@ -41,6 +45,15 @@ dp.include_routers(
     expense_router,
     router_other
 )
+
+
+@dp.message(F.text, Command("get_deep_link"))
+async def cmd_start(message: types.Message):
+    link = await create_start_link(bot=bot, payload="help")
+    await message.answer(
+        f"Hello, {html.bold(html.quote(message.from_user.username))}! Link: {link}.\n",
+        # f"And your deeplink is here: {deep_link}\n",
+        parse_mode=ParseMode.HTML)
 
 
 if __name__ == "__main__":

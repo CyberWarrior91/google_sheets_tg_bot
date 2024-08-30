@@ -9,9 +9,6 @@ from typing import List
 load_dotenv()
 
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", None)
-bot = Bot(token=BOT_TOKEN)
-
 CANCEL_MESSAGE = 'Для отмены действия отправьте команду /cancel или напишите слово "отмена"'
 
 

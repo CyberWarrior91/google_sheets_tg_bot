@@ -3,7 +3,6 @@ from aiogram.filters.command import Command
 from aiogram.fsm.state import default_state
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
-from .utils import bot
 from aiogram.utils.deep_linking import create_start_link
 from aiogram.enums.parse_mode import ParseMode
 
@@ -38,10 +37,3 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
         reply_markup=types.ReplyKeyboardRemove()
     )
 
-# @router.message(F.text, Command("get_deep_link"))
-# async def cmd_start(message: types.Message):
-#     link = await create_start_link(bot=bot, payload="help")
-#     await message.answer(
-#         f"Hello, {html.bold(html.quote(message.from_user.username))}! Link: {link}.\n",
-#         # f"And your deeplink is here: {deep_link}\n",
-#         parse_mode=ParseMode.HTML)

@@ -33,7 +33,7 @@ class Expense(StatesGroup):
 
 @router.message(Command("add_expense"))
 async def add_new_expense_start(message: types.Message, state: FSMContext):
-    user_spreadsheets = await get_spreadsheets_by_user(message.from_user.id)
+    user_spreadsheets = get_spreadsheets_by_user(message.from_user.id)
     if user_spreadsheets:
         msg = "Выберите таблицу, к которой хотите добавить новую статью расхода:"
         await show_tables_as_reply(
@@ -53,7 +53,7 @@ async def add_new_expense_start(message: types.Message, state: FSMContext):
 
 @router.message(Expense.waiting_for_add_expense)
 async def add_expense_item_start(message: types.Message, state: FSMContext):
-    s_id = await get_spreadsheet_id_by_name(name=message.text)
+    s_id = get_spreadsheet_id_by_name(name=message.text)
     if s_id:
         await state.update_data(spreadsheet_id=s_id)
         msg = 'Пожалуйста, укажите статью расходов.\n'\
@@ -91,7 +91,7 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     await message.answer(f'Ваша сумма расхода: {user_data["expense_amount"]}.\n')
     base_spreadsheet_id = user_data.get("spreadsheet_id", None)
-    sheets = await get_sheets_by_spreadsheet_id(s_id=base_spreadsheet_id)
+    sheets = get_sheets_by_spreadsheet_id(s_id=base_spreadsheet_id)
     todays_month_and_year = datetime.datetime.today().strftime("%m/%Y")
     if todays_month_and_year not in sheets:
         sheet_id, sheet_name = await create_new_sheet(
@@ -100,7 +100,7 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
             title=todays_month_and_year
         )
         sheets.append(sheet_name)
-        await add_sheet_to_db(
+        add_sheet_to_db(
             google_unique_id=sheet_id, 
             name=sheet_name, 
             spreadsheet_id=base_spreadsheet_id
@@ -122,7 +122,7 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
 
 @router.message(Command("last_ten_expenses"))
 async def view_last_ten_expenses_start(message: types.Message, state: FSMContext):
-    user_spreadsheets = await get_spreadsheets_by_user(message.from_user.id)
+    user_spreadsheets = get_spreadsheets_by_user(message.from_user.id)
     if user_spreadsheets:
         msg = "Выберите таблицу, по которой хотите посмотреть последние 10 расходов:"
         await show_tables_as_reply(
@@ -142,9 +142,9 @@ async def view_last_ten_expenses_start(message: types.Message, state: FSMContext
 
 @router.message(Expense.show_expenses_choose_table)
 async def view_last_ten_expenses_success(message: types.Message, state: FSMContext):
-    table_id = await get_spreadsheet_id_by_name(name=message.text)
+    table_id = get_spreadsheet_id_by_name(name=message.text)
     if table_id:
-        sheets = await get_sheets_by_spreadsheet_id(s_id=table_id)
+        sheets = get_sheets_by_spreadsheet_id(s_id=table_id)
         result = await show_last_ten_expenses(
             message.from_user.id,
             table_id, 
@@ -162,7 +162,7 @@ async def view_last_ten_expenses_success(message: types.Message, state: FSMConte
 
 @router.message(Command("this_month_expenses"))
 async def view_this_month_expenses_start(message: types.Message, state: FSMContext):
-    user_spreadsheets = await get_spreadsheets_by_user(message.from_user.id)
+    user_spreadsheets = get_spreadsheets_by_user(message.from_user.id)
     if user_spreadsheets:
         msg = "Выберите таблицу, по которой хотите посмотреть общий расход за последний месяц:"
         await show_tables_as_reply(
@@ -179,9 +179,9 @@ async def view_this_month_expenses_start(message: types.Message, state: FSMConte
 
 @router.message(Expense.show_monthly_expenses_choose_table)
 async def view_this_month_expenses_success(message: types.Message, state: FSMContext):
-    table_id = await get_spreadsheet_id_by_name(name=message.text)
+    table_id = get_spreadsheet_id_by_name(name=message.text)
     if table_id:
-        sheets = await get_sheets_by_spreadsheet_id(s_id=table_id)    
+        sheets = get_sheets_by_spreadsheet_id(s_id=table_id)    
         result = await show_this_month_expenses(
             message.from_user.id,
             table_id, 

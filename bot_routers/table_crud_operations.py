@@ -74,14 +74,14 @@ async def parse_title(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     spreadsheet_id = await create_new_spreadsheet(user_id, title=title)
     if check_user_in_database(user_id) is None:
-        await add_user_to_db(telegram_id=user_id)
-    await add_spreadsheet_to_db(
+        add_user_to_db(telegram_id=user_id)
+    add_spreadsheet_to_db(
         google_unique_id=spreadsheet_id,
         name=title,
         user_telegram_id=user_id
     )
     sheet_id, sheet_name = await get_sheet(user_id, spreadsheet_id)
-    await add_sheet_to_db(google_unique_id=sheet_id, name=sheet_name, spreadsheet_id=spreadsheet_id)
+    add_sheet_to_db(google_unique_id=sheet_id, name=sheet_name, spreadsheet_id=spreadsheet_id)
     table_url = await get_spreadsheet_url(user_id, spreadsheet_id)
     hyper_link = hlink("ссылка", table_url)
     await message.answer(
@@ -96,7 +96,7 @@ async def parse_title(message: types.Message, state: FSMContext):
 
 @router.callback_query(F.data == "edit_table")
 async def change_table_title_start(callback: types.CallbackQuery, state: FSMContext):
-    user_spreadsheets = await get_spreadsheets_by_user(callback.from_user.id)
+    user_spreadsheets = get_spreadsheets_by_user(callback.from_user.id)
     if user_spreadsheets:
         msg = "Пожалуйста, выберите таблицу, которую хотите переименовать:\n"
         await show_tables_as_reply(
@@ -115,7 +115,7 @@ async def change_table_title_start(callback: types.CallbackQuery, state: FSMCont
 @router.message(Table.change_title_choose_old_name)
 async def change_title_choose_table(message: types.Message, state: FSMContext):
     title = message.text
-    s_id = await get_spreadsheet_id_by_name(name=title)
+    s_id = get_spreadsheet_id_by_name(name=title)
     if s_id is None:
         await table_name_false_input(message, state)
     else:
@@ -139,7 +139,7 @@ async def change_title_success(message: types.Message, state: FSMContext):
         await message.answer(f'Новое имя для таблицы: "{new_title}"')
         s_id = user_data["spreadsheet_id"]
         await change_spreadsheet_name(message.from_user.id, s_id, new_title)
-        await edit_spreadsheet_name_in_db(id=s_id, new_name=new_title)
+        edit_spreadsheet_name_in_db(id=s_id, new_name=new_title)
         await message.answer(f'Таблица была успешно переименована!')
         await message.answer(
         "Чтобы вернуться в главное меню бота, отправьте команду /start"
@@ -148,7 +148,7 @@ async def change_title_success(message: types.Message, state: FSMContext):
 
 @router.callback_query(F.data == "view_table")
 async def view_expense_table_start(callback: types.CallbackQuery, state: FSMContext):
-    user_spreadsheets = await get_spreadsheets_by_user(callback.from_user.id)
+    user_spreadsheets = get_spreadsheets_by_user(callback.from_user.id)
     if user_spreadsheets:
         msg = "Пожалуйста, выберите таблицу, по которой хотите получить ссылку:\n"
         await show_tables_as_reply(
@@ -167,7 +167,7 @@ async def view_expense_table_start(callback: types.CallbackQuery, state: FSMCont
 @router.message(Table.view_table_choose)
 async def view_expense_table(message: types.Message, state: FSMContext):
     table_name = message.text
-    spreadsheet_id = await get_spreadsheet_id_by_name(name=table_name)
+    spreadsheet_id = get_spreadsheet_id_by_name(name=table_name)
     if spreadsheet_id:
         table_url = await get_spreadsheet_url(message.from_user.id, spreadsheet_id)
         hyper_link = hlink("ссылка", table_url)
@@ -179,7 +179,7 @@ async def view_expense_table(message: types.Message, state: FSMContext):
 
 @router.callback_query(F.data == "delete_table")
 async def delete_table_start(callback: types.CallbackQuery, state: FSMContext):
-    user_spreadsheets = await get_spreadsheets_by_user(callback.from_user.id)
+    user_spreadsheets = get_spreadsheets_by_user(callback.from_user.id)
     if user_spreadsheets:
         msg = "Пожалуйста, выберите таблицу, которую хотите удалить:\n"
         await show_tables_as_reply(
@@ -199,7 +199,7 @@ async def delete_table_start(callback: types.CallbackQuery, state: FSMContext):
 @router.message(Table.delete_choose_table)
 async def delete_table_start(message: types.Message, state: FSMContext):
     table_name = message.text
-    table_id = await get_spreadsheet_id_by_name(table_name)
+    table_id = get_spreadsheet_id_by_name(table_name)
     if not table_id:
         await table_name_false_input(message, state)
     else:
@@ -223,8 +223,8 @@ async def delete_no_answer(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(F.data=="Yes")
 async def delete_yes_answer(callback: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
-    spreadsheet_id = await get_spreadsheet_id_by_name(user_data["table"])
-    if await delete_spreadsheet_from_db(spreadsheet_id) is True:
+    spreadsheet_id = get_spreadsheet_id_by_name(user_data["table"])
+    if delete_spreadsheet_from_db(spreadsheet_id) is True:
         if await delete_spreadsheet_from_sheets(callback.from_user.id, spreadsheet_id) is True:
             await callback.message.answer("Таблица была успешно удалена!")
         else:
