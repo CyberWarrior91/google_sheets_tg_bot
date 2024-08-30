@@ -40,7 +40,7 @@ def get_session():
     engine = create_engine(DATABASE_URL)
     # Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    Session = sessionmaker(engine)
+    Session = sessionmaker(engine, expire_on_commit=False)
     with Session.begin() as session:
       try:
           yield session
