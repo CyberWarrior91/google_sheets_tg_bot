@@ -92,14 +92,18 @@ async def oauth2callback(request: Request):
     if not user:
       user = add_user_to_db(telegram_id=int(telegram_id))
     token_path = f"var/data/{telegram_id}.json"
-    if not os.path.exists("var/data"):
-      os.mkdir("var/data")
-    with open(f"{token_path}", "w") as token:
-      token.write(credentials.to_json())
-    add_token_to_user(telegram_id, token_path)
-    return HTMLResponse(
+    os.makedirs(os.path.dirname(token_path), exist_ok=True)
+    try:
+      with open(token_path, "w") as token:
+        token.write(credentials.to_json())
+      add_token_to_user(telegram_id, token_path)
+      return HTMLResponse(
       "<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
       f"<a href='{BOT_URL}'>кнопку</a></p>")
+    except Exception as e:
+      # Log the error for troubleshooting
+      print(f"Error saving token: {e}")
+      return PlainTextResponse("Авторизация неуспешна")
   return PlainTextResponse("Авторизация неуспешна")
 
 def credentials_to_dict(credentials: Credentials):
