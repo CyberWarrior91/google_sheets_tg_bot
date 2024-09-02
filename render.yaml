@@ -25,7 +25,7 @@ services:
         value: false
     disk: # Persistent disk configuration
       name: users_tokens
-      mountPath: /database/users_tokens
+      mountPath: /var/data
       sizeGB: 1 # optional
 
   - type: worker
@@ -46,7 +46,7 @@ services:
         sync: false
     disk: # Persistent disk configuration
       name: users_tokens
-      mountPath: /database/users_tokens
+      mountPath: /var/data
       sizeGB: 1 # optional
       
 databases:
