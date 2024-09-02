@@ -92,7 +92,7 @@ async def oauth2callback(request: Request):
     if not user:
       user = add_user_to_db(telegram_id=int(telegram_id))
     token_path = f"database/users_tokens/{telegram_id}.json"
-    with open(f"{token_path}", "w") as token:
+    with open(f"{token_path}", "x") as token:
       token.write(credentials.to_json())
     add_token_to_user(telegram_id, token_path)
     return HTMLResponse(
