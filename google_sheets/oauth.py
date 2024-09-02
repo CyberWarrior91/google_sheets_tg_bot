@@ -92,7 +92,9 @@ async def oauth2callback(request: Request):
     if not user:
       user = add_user_to_db(telegram_id=int(telegram_id))
     token_path = f"database/users_tokens/{telegram_id}.json"
-    with open(f"{token_path}", "x") as token:
+    if not os.path.exists("database/users_tokens"):
+      os.mkdir("database/users_tokens")
+    with open(f"{token_path}", "w") as token:
       token.write(credentials.to_json())
     add_token_to_user(telegram_id, token_path)
     return HTMLResponse(
@@ -100,7 +102,7 @@ async def oauth2callback(request: Request):
       f"<a href='{BOT_URL}'>кнопку</a></p>")
   return PlainTextResponse("Авторизация неуспешна")
 
-def credentials_to_dict(credentials):
+def credentials_to_dict(credentials: Credentials):
   return {'token': credentials.token,
           'refresh_token': credentials.refresh_token,
           'token_uri': credentials.token_uri,
