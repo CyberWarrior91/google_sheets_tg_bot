@@ -2,7 +2,7 @@
 # the PostgreSQL database it connects to.
 services:
   - type: web # A Python web service named django-app running on a free instance
-    plan: free
+    plan: starter
     name: fastapi_app
     runtime: python
     repo: https://github.com/CyberWarrior91/google_sheets_tg_bot.git
