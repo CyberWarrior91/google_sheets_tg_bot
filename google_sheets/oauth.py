@@ -97,8 +97,10 @@ async def oauth2callback(request: Request):
       with open(token_path, "w") as token:
         token.write(credentials.to_json())
       add_token_to_user(telegram_id, token_path)
+      with open(token_path, "r") as token:
+        path_name = token.name
       return HTMLResponse(
-      "<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
+      f"<p>Авторизация прошла успешно! Токен: {path_name} Для возврата в бот, нажмите на " +
       f"<a href='{BOT_URL}'>кнопку</a></p>")
     except Exception as e:
       # Log the error for troubleshooting
