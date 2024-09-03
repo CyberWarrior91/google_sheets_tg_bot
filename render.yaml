@@ -23,10 +23,6 @@ services:
         sync: false
       - key: DEBUG
         value: false
-    disk: # Persistent disk configuration
-      name: users_tokens
-      mountPath: /var/data
-      sizeGB: 1 # optional
 
   - type: worker
     plan: starter
@@ -44,10 +40,6 @@ services:
         sync: false
       - key: BOT_URL
         sync: false
-    disk: # Persistent disk configuration
-      name: users_tokens
-      mountPath: /var/data
-      sizeGB: 1 # optional
       
 databases:
   - name: google_bot_db # A PostgreSQL database named django-app-db running on a free instance
