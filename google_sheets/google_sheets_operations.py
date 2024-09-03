@@ -5,7 +5,7 @@ from googleapiclient.errors import HttpError
 from .oauth import SCOPES
 from google.oauth2.credentials import Credentials
 from database.db_crud_operations import check_user_in_database
-import ast
+import ast, json
 
 
 # def authorize_google_sheets():
@@ -41,8 +41,9 @@ async def get_google_sheets_service(user_telegram_id: int):
     """Returns a Google Sheets API service object."""
     user = check_user_in_database(user_telegram_id)
     if user and user.access_token:
-      token = ast.literal_eval(user.access_token)
       print(token)
+      # token = ast.literal_eval(user.access_token)
+      token = json.loads(user.access_token)
       creds = Credentials.from_authorized_user_info(token, SCOPES)
       print(creds)
       return build('sheets', 'v4', credentials=creds)
