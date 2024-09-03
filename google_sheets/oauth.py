@@ -22,8 +22,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", None)
 BOT_URL = os.getenv("BOT_URL", "")
 FASTAPI_HOST = os.getenv("FASTAPI_HOST", "http://127.0.0.1:8000")
 DEBUG=os.getenv("DEBUG", True)
-if DEBUG:
-  os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+OAUTHLIB_INSECURE_TRANSPORT=os.getenv("OAUTHLIB_INSECURE_TRANSPORT", None)
 
 app = FastAPI()
 
