@@ -22,7 +22,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", None)
 BOT_URL = os.getenv("BOT_URL", "")
 FASTAPI_HOST = os.getenv("FASTAPI_HOST", "http://127.0.0.1:8000")
 DEBUG=os.getenv("DEBUG", True)
-OAUTHLIB_INSECURE_TRANSPORT=os.getenv("OAUTHLIB_INSECURE_TRANSPORT", None)
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '0'
 
 app = FastAPI()
 
@@ -102,7 +102,7 @@ async def oauth2callback(request: Request):
       creds_string = json.dumps(request.session["credentials"])
       add_token_to_user(telegram_id=telegram_id, token=creds_string)
       return HTMLResponse(
-      f"<p>Авторизация прошла успешно! Client_ID: {request.session['credentials'].get('client_id', None)} Для возврата в бот, нажмите на " +
+      f"<p>Авторизация прошла успешно! Refresh_token: {request.session['credentials'].get('refresh_token', None)} Для возврата в бот, нажмите на " +
       f"<a href='{BOT_URL}'>кнопку</a></p>")
     except Exception as e:
       # Log the error for troubleshooting
