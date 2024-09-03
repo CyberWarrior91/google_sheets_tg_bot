@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse, RedirectResponse, HTMLResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.requests import Request
+import json
 from dotenv import load_dotenv
 from database.db_crud_operations import (
     check_user_in_database, 
@@ -91,16 +92,18 @@ async def oauth2callback(request: Request):
     user = check_user_in_database(telegram_id)
     if not user:
       user = add_user_to_db(telegram_id=int(telegram_id))
-    token_path = f"var/data/{telegram_id}.json"
-    os.makedirs(os.path.dirname(token_path), exist_ok=True)
+    # token_path = f"var/data/{telegram_id}.json"
+    # os.makedirs(os.path.dirname(token_path), exist_ok=True)
     try:
-      with open(token_path, "w") as token:
-        token.write(credentials.to_json())
-      add_token_to_user(telegram_id, token_path)
-      with open(token_path, "r") as token:
-        path_name = token.name
+      # with open(token_path, "w") as token:
+      #   token.write(credentials.to_json())
+      # add_token_to_user(telegram_id, token_path)
+      # with open(token_path, "r") as token:
+      #   path_name = token.name
+      creds_string = json.dumps(request.session["credentials"])
+      add_token_to_user(telegram_id=telegram_id, token=creds_string)
       return HTMLResponse(
-      f"<p>Авторизация прошла успешно! Токен: {path_name} Для возврата в бот, нажмите на " +
+      f"<p>Авторизация прошла успешно! Client_ID: {request.session['credentials'].get('client_id', None)} Для возврата в бот, нажмите на " +
       f"<a href='{BOT_URL}'>кнопку</a></p>")
     except Exception as e:
       # Log the error for troubleshooting

@@ -44,7 +44,7 @@ def add_token_to_user(telegram_id: int, token: str):
         return user
 
 def add_spreadsheet_to_db(google_unique_id: str, name: str, user_telegram_id: int):
-    for session in get_async_session():
+    for session in get_session():
         new_spdsheet = Spreadsheet(
             google_unique_id=google_unique_id,
             name=name,
@@ -56,7 +56,7 @@ def add_spreadsheet_to_db(google_unique_id: str, name: str, user_telegram_id: in
         return new_spdsheet
 
 def add_sheet_to_db(google_unique_id: int, name: str, spreadsheet_id: str):
-    for session in get_async_session():
+    for session in get_session():
         new_sheet = Sheet(
             google_unique_id=google_unique_id,
             name=name,
@@ -76,7 +76,7 @@ def get_spreadsheets_by_user(user_telegram_id: int):
         return []
 
 def get_sheets_by_spreadsheet_id(s_id: str):
-    for session in get_async_session():
+    for session in get_session():
         spreadsheet_in_db = session.scalars(
             select(Spreadsheet).where(
                 Spreadsheet.google_unique_id==s_id).options(
@@ -90,7 +90,7 @@ def get_sheets_by_spreadsheet_id(s_id: str):
 
 
 def get_spreadsheet_id_by_name(name: str):
-    for session in get_async_session():
+    for session in get_session():
         s_in_db = session.scalars(select(Spreadsheet).where(Spreadsheet.name==name))
         spreadsheet = s_in_db.first()
         if spreadsheet:
@@ -98,7 +98,7 @@ def get_spreadsheet_id_by_name(name: str):
         return None
 
 def edit_spreadsheet_name_in_db(id: str, new_name: str):
-    for session in get_async_session():
+    for session in get_session():
         s_in_db = session.scalars(
             select(Spreadsheet).where(
                 Spreadsheet.google_unique_id==id)
@@ -109,7 +109,7 @@ def edit_spreadsheet_name_in_db(id: str, new_name: str):
         print("The spreadsheet name was changed successfully")
 
 def delete_spreadsheet_from_db(id: str):
-    for session in get_async_session():
+    for session in get_session():
         s_in_db = session.scalars(
             select(Spreadsheet).where(
                 Spreadsheet.google_unique_id==id
