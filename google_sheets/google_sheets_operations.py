@@ -311,7 +311,7 @@ async def delete_spreadsheet_from_sheets(user_id: int, spreadsheet_id: str):
   # Since Sheets API doesn't allow us to remove a spreadsheet directly,
   # We will use Google Drive API to remove the file from user's account.
   try:
-    user = await check_user_in_db(user_id)
+    user = check_user_in_database(user_id)
     if user and user.access_token:
       creds = Credentials.from_authorized_user_file(user.access_token, SCOPES)
       drive_service = build('drive', 'v3', credentials=creds)

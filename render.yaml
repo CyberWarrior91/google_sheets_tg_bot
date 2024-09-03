@@ -2,12 +2,12 @@
 # the PostgreSQL database it connects to.
 services:
   - type: web # A Python web service named django-app running on a free instance
-    plan: starter
+    plan: free
     name: fastapi_app
     runtime: python
     repo: https://github.com/CyberWarrior91/google_sheets_tg_bot.git
     buildCommand: "./docker/app_build.sh"
-    startCommand: "./docker/app.sh"
+    startCommand: "python3 -m fastapi run google_sheets/oauth.py"
     envVars:
       - key: DATABASE_URL # Sets DATABASE_URL to the connection string of the django-app-db database
         fromDatabase:
@@ -30,7 +30,7 @@ services:
     runtime: python
     repo: https://github.com/CyberWarrior91/google_sheets_tg_bot.git
     buildCommand: "./docker/app_build.sh"
-    startCommand: "./docker/bot.sh"
+    startCommand: "python3 -m bot_main"
     envVars:
       - key: DATABASE_URL # Sets DATABASE_URL to the connection string of the django-app-db database
         fromDatabase:
