@@ -33,15 +33,24 @@ def check_user_in_database(telegram_id: int):
 
 def add_token_to_user(telegram_id: int, token: str):
     for session in get_session():
-        user_in_db = session.scalars(
-            select(User).where(
-                User.telegram_id==telegram_id)
-        )
-        user = user_in_db.first()
-        user.access_token = token
-        session.commit()
-        print("The token was added successfully")
-        return user
+        user = check_user_in_database(telegram_id)
+        if user:
+            user.access_token = token
+            session.commit()
+            print("The token was added successfully")
+            return user
+        return None
+
+def remove_token_from_user_in_db(telegram_id):
+    for session in get_session():
+        user = check_user_in_database(telegram_id)
+        if user:
+            user.access_token = None
+            session.commit()
+            print("The token was removed successfully")
+            return True
+        return None
+
 
 def add_spreadsheet_to_db(google_unique_id: str, name: str, user_telegram_id: int):
     for session in get_session():

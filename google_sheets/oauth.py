@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from database.db_crud_operations import (
     check_user_in_database, 
     add_user_to_db,
-    add_token_to_user
+    add_token_to_user,
+    remove_token_from_user_in_db
 )
 import requests
 load_dotenv()
@@ -90,7 +91,7 @@ async def oauth2callback(request: Request):
       user = add_user_to_db(telegram_id=int(telegram_id))
     creds_string = json.dumps(request.session["credentials"])
     add_token_to_user(telegram_id=telegram_id, token=creds_string)
-    revoke_url = request.url_for("revoke")
+    revoke_url = request.url_for("revoke") + f"?telegram_user_id={telegram_id}"
     return HTMLResponse(
     f"<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
     f"<a href='{BOT_URL}'>кнопку</a>"
@@ -112,9 +113,14 @@ def revoke(request: Request):
 
   status_code = getattr(revoke, 'status_code')
   if status_code == 200:
-    return('Доступ успешно отозван.')
+    telegram_id = request.query_params.get("telegram_user_id")
+    result = remove_token_from_user_in_db(telegram_id)
+    if result:
+      return PlainTextResponse('Доступ успешно отозван.')
+    else:
+      return PlainTextResponse("Ошибка удаления токена")
   else:
-    return('Произошла ошибка.')
+    return PlainTextResponse('Произошла ошибка.')
   
 def credentials_to_dict(credentials: Credentials):
   return {'token': credentials.token,
