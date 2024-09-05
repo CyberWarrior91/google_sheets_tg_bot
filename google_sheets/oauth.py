@@ -14,6 +14,7 @@ from database.db_crud_operations import (
     add_user_to_db,
     add_token_to_user
 )
+import requests
 load_dotenv()
 
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
@@ -51,11 +52,6 @@ def authorize(request: Request):
   # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
   flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
       CREDENTIALS, scopes=SCOPES)
-
-  # The URI created here must exactly match one of the authorized redirect URIs
-  # for the OAuth 2.0 client, which you configured in the API Console. If this
-  # value doesn't match an authorized URI, you will get a 'redirect_uri_mismatch'
-  # error.
   flow.redirect_uri = request.url_for("oauth2callback")
   authorization_url, state = flow.authorization_url(
       # Enable offline access so that you can refresh an access token without
@@ -92,25 +88,33 @@ async def oauth2callback(request: Request):
     user = check_user_in_database(telegram_id)
     if not user:
       user = add_user_to_db(telegram_id=int(telegram_id))
-    # token_path = f"var/data/{telegram_id}.json"
-    # os.makedirs(os.path.dirname(token_path), exist_ok=True)
-    try:
-      # with open(token_path, "w") as token:
-      #   token.write(credentials.to_json())
-      # add_token_to_user(telegram_id, token_path)
-      # with open(token_path, "r") as token:
-      #   path_name = token.name
-      creds_string = json.dumps(request.session["credentials"])
-      add_token_to_user(telegram_id=telegram_id, token=creds_string)
-      return HTMLResponse(
-      f"<p>Авторизация прошла успешно! Refresh_token: {request.session['credentials'].get('refresh_token', None)} Для возврата в бот, нажмите на " +
-      f"<a href='{BOT_URL}'>кнопку</a></p>")
-    except Exception as e:
-      # Log the error for troubleshooting
-      print(f"Error saving token: {e}")
-      return PlainTextResponse("Авторизация неуспешна")
+    creds_string = json.dumps(request.session["credentials"])
+    add_token_to_user(telegram_id=telegram_id, token=creds_string)
+    revoke_url = request.url_for("revoke")
+    return HTMLResponse(
+    f"<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
+    f"<a href='{BOT_URL}'>кнопку</a>\n\n"
+    f"Чтобы отозвать доступ к своему Google аккаунту, нажмите <a href='{revoke_url}'здесь</a></p>")
   return PlainTextResponse("Авторизация неуспешна")
 
+@app.get('/revoke')
+def revoke(request: Request):
+  if 'credentials' not in request.session:
+    return HTMLResponse('Вам необходимо <a href="/authorize">авторизоваться </a> перед ' +
+            'тем, как отзывать разрешение на доступ к Google сервисам')
+
+  credentials = Credentials(**request.session['credentials'])
+
+  revoke = requests.post('https://oauth2.googleapis.com/revoke',
+      params={'token': credentials.token},
+      headers = {'content-type': 'application/x-www-form-urlencoded'})
+
+  status_code = getattr(revoke, 'status_code')
+  if status_code == 200:
+    return('Доступ успешно отозван.')
+  else:
+    return('Произошла ошибка.')
+  
 def credentials_to_dict(credentials: Credentials):
   return {'token': credentials.token,
           'refresh_token': credentials.refresh_token,
