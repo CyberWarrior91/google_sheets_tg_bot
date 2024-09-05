@@ -36,7 +36,7 @@ app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 # async def index():
 #   return print_index_table()
 
-@app.get('/test', response_class=PlainTextResponse)
+@app.get('/main', response_class=PlainTextResponse)
 def test(request: Request):
   if 'credentials' not in request.session:
     return RedirectResponse("/authorize")
@@ -91,7 +91,7 @@ async def oauth2callback(request: Request):
       user = add_user_to_db(telegram_id=int(telegram_id))
     creds_string = json.dumps(request.session["credentials"])
     add_token_to_user(telegram_id=telegram_id, token=creds_string)
-    revoke_url = request.url_for("revoke") + f"?telegram_user_id={telegram_id}"
+    revoke_url = f'{request.url_for("revoke")}?telegram_id={telegram_id}'
     return HTMLResponse(
     f"<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
     f"<a href='{BOT_URL}'>кнопку</a>"
@@ -100,10 +100,10 @@ async def oauth2callback(request: Request):
   return PlainTextResponse("Авторизация неуспешна")
 
 @app.get('/revoke')
-def revoke(request: Request):
+def revoke(request: Request, telegram_id: int | None = None):
   if 'credentials' not in request.session:
     return HTMLResponse('Вам необходимо <a href="/authorize">авторизоваться </a> перед ' +
-            'тем, как отзывать разрешение на доступ к Google сервисам')
+            'тем, как отзывать доступ к своему Google аккаунту')
 
   credentials = Credentials(**request.session['credentials'])
 
@@ -113,7 +113,7 @@ def revoke(request: Request):
 
   status_code = getattr(revoke, 'status_code')
   if status_code == 200:
-    telegram_id = request.query_params.get("telegram_user_id")
+    telegram_id = request.query_params.get("telegram_id")
     result = remove_token_from_user_in_db(telegram_id)
     if result:
       return PlainTextResponse('Доступ успешно отозван.')

@@ -33,13 +33,15 @@ def check_user_in_database(telegram_id: int):
 
 def add_token_to_user(telegram_id: int, token: str):
     for session in get_session():
-        user = check_user_in_database(telegram_id)
-        if user:
-            user.access_token = token
-            session.commit()
-            print("The token was added successfully")
-            return user
-        return None
+        user_in_db = session.scalars(
+            select(User).where(
+                User.telegram_id==telegram_id)
+        )
+        user = user_in_db.first()
+        user.access_token = token
+        session.commit()
+        print("The token was added successfully")
+        return user
 
 def remove_token_from_user_in_db(telegram_id):
     for session in get_session():
