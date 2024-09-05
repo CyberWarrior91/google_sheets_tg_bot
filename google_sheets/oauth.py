@@ -40,12 +40,13 @@ async def index(request: Request):
 @app.get('/main', response_class=PlainTextResponse)
 def test(request: Request):
   if 'credentials' not in request.session:
+    
     return RedirectResponse("/authorize")
   # Load credentials from the session.
   credentials = Credentials(
       **request.session['credentials'])
   request.session['credentials'] = credentials_to_dict(credentials)
-
+  return PlainTextResponse(f"Creds: {request.session.get('credentials')}")
   return "Ваш аккаунт уже авторизован! Можете вернуться в диалог с ботом"
 
 @app.get('/authorize', response_class=RedirectResponse)
@@ -53,7 +54,7 @@ def authorize(request: Request):
   # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
   flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
       CREDENTIALS, scopes=SCOPES)
-  flow.redirect_uri = app.url_path_for("oauth2callback")
+  flow.redirect_uri = request.url_for("oauth2callback")
   authorization_url, state = flow.authorization_url(
       # Enable offline access so that you can refresh an access token without
       # re-prompting the user for permission. Recommended for web server apps.
@@ -61,7 +62,7 @@ def authorize(request: Request):
       # Enable incremental authorization. Recommended as a best practice.
       include_granted_scopes='true')
   # Store the state so the callback can verify the auth server response.
-  telegram_user_id = request.query_params.get('telegram_user_id')
+  telegram_user_id = request.query_params.get('telegram_id')
   request.session['telegram_id'] = telegram_user_id
   request.session['state'] = state
   return authorization_url
@@ -119,7 +120,7 @@ def revoke(request: Request, telegram_id: int | None = None):
       return PlainTextResponse('Доступ успешно отозван.')
     return PlainTextResponse("Ошибка удаления токена")
   else:
-    return PlainTextResponse('Произошла ошибка.')
+    return PlainTextResponse('Доступ уже был отозван либо вы не авторизованы в сервисе Google')
   
 def credentials_to_dict(credentials: Credentials):
   return {'token': credentials.token,
@@ -129,11 +130,9 @@ def credentials_to_dict(credentials: Credentials):
           'client_secret': credentials.client_secret,
           'scopes': credentials.scopes}
 
-def print_index_table(telegram_id: str):
-  auth_link = f'{app.url_path_for("authorize")}?telegram_id={telegram_id}'
-  revoke_link = f'{app.url_path_for("revoke")}?telegram_id={telegram_id}'
+def print_index_table(telegram_id):
   return ('<table>' +
-          f'<tr><td><a href="/main?telegram_id={telegram_id}">Авторизоваться в сервисе Google</a></td>' +
+          f'<tr><td><a href="/authorize?telegram_id={telegram_id}">Авторизоваться в сервисе Google</a></td>' +
           '<td>Вам будет необходимо выбрать свой Google аккаунт, ' +
           'для которого вы хотите создать Google таблицу с расходами</td></tr>' +
           f'<tr><td><a href="/revoke?telegram_id={telegram_id}">Отозвать доступ к своему Google аккаунту</a></td>' +

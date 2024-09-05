@@ -23,7 +23,7 @@ class AuthorizationMiddleware(BaseMiddleware):
         user_id = event.from_user.id
         user = await self.is_user_authorized(user_id)
         if not user:
-            auth_link = f"{FASTAPI_HOST}?telegram_user_id={user_id}"
+            auth_link = f"{FASTAPI_HOST}?telegram_id={user_id}"
             hyper_link = hlink("ССЫЛКА", auth_link)
             # If not, redirect to Google authorization flow 
             await event.answer(
