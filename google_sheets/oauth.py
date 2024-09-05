@@ -93,8 +93,9 @@ async def oauth2callback(request: Request):
     revoke_url = request.url_for("revoke")
     return HTMLResponse(
     f"<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
-    f"<a href='{BOT_URL}'>кнопку</a>\n\n"
-    f"Чтобы отозвать доступ к своему Google аккаунту, нажмите <a href='{revoke_url}'здесь</a></p>")
+    f"<a href='{BOT_URL}'>кнопку</a>"
+    "<br>"
+    f"Чтобы отозвать доступ к своему Google аккаунту, нажмите <a href='{revoke_url}'>здесь</a></p>")
   return PlainTextResponse("Авторизация неуспешна")
 
 @app.get('/revoke')
