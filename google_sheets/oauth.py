@@ -32,28 +32,28 @@ app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 
-# @app.get('/', response_class=HTMLResponse)
-# async def index():
-#   return print_index_table()
+@app.get('/', response_class=HTMLResponse)
+async def index(request: Request):
+  telegram_id = request.query_params.get('telegram_id')
+  return print_index_table(telegram_id)
 
 @app.get('/main', response_class=PlainTextResponse)
 def test(request: Request):
   if 'credentials' not in request.session:
     return RedirectResponse("/authorize")
-
   # Load credentials from the session.
   credentials = Credentials(
       **request.session['credentials'])
   request.session['credentials'] = credentials_to_dict(credentials)
 
-  return "Ваш аккаунт авторизован! Можете вернуться в диалог с ботом"
+  return "Ваш аккаунт уже авторизован! Можете вернуться в диалог с ботом"
 
 @app.get('/authorize', response_class=RedirectResponse)
 def authorize(request: Request):
   # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
   flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
       CREDENTIALS, scopes=SCOPES)
-  flow.redirect_uri = request.url_for("oauth2callback")
+  flow.redirect_uri = app.url_path_for("oauth2callback")
   authorization_url, state = flow.authorization_url(
       # Enable offline access so that you can refresh an access token without
       # re-prompting the user for permission. Recommended for web server apps.
@@ -117,8 +117,7 @@ def revoke(request: Request, telegram_id: int | None = None):
     result = remove_token_from_user_in_db(telegram_id)
     if result:
       return PlainTextResponse('Доступ успешно отозван.')
-    else:
-      return PlainTextResponse("Ошибка удаления токена")
+    return PlainTextResponse("Ошибка удаления токена")
   else:
     return PlainTextResponse('Произошла ошибка.')
   
@@ -130,13 +129,13 @@ def credentials_to_dict(credentials: Credentials):
           'client_secret': credentials.client_secret,
           'scopes': credentials.scopes}
 
-# def print_index_table():
-#   return ('<table>' +
-#           '<tr><td><a href="/test">Проверить актуальность доступа к Google Sheets</a></td>' +
-#           '<td>Submit an API request and see a formatted JSON response. ' +
-#           '    Go through the authorization flow if there are no stored ' +
-#           '    credentials for the user.</td></tr>' +
-#           '<tr><td><a href="/authorize">Нажмите на ссылку, чтобы авторизоваться в сервисе Google</a></td>' +
-#           '<td>Вам будет необходимо выбрать свой Google аккаунт, ' +
-#           'для которого вы хотите создать Google таблицу с расходами</td></tr>' +
-#           '</table>')
+def print_index_table(telegram_id: str):
+  auth_link = f'{app.url_path_for("authorize")}?telegram_id={telegram_id}'
+  revoke_link = f'{app.url_path_for("revoke")}?telegram_id={telegram_id}'
+  return ('<table>' +
+          f'<tr><td><a href="/main?telegram_id={telegram_id}">Авторизоваться в сервисе Google</a></td>' +
+          '<td>Вам будет необходимо выбрать свой Google аккаунт, ' +
+          'для которого вы хотите создать Google таблицу с расходами</td></tr>' +
+          f'<tr><td><a href="/revoke?telegram_id={telegram_id}">Отозвать доступ к своему Google аккаунту</a></td>' +
+          '<td>Нажмите на ссылку, чтобы больше не предоставлять доступ к своему Google аккаунту для сервисов Google</td></tr>'
+          '</table>')
