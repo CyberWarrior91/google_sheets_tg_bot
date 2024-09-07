@@ -11,7 +11,9 @@ from google_sheets.google_sheets_operations import (
     get_sheet
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.methods.send_chat_action import SendChatAction
 from .utils import (
+    bot,
     table_name_false_input,
     CANCEL_MESSAGE,
     show_tables_as_reply
@@ -72,6 +74,7 @@ async def parse_title(message: types.Message, state: FSMContext):
                              "Пожалуйста, придумайте имя покороче (до 35 символов)")
         return
     user_id = message.from_user.id
+    await bot.send_chat_action(chat_id=message.chat.id, action="typing")
     spreadsheet_id = await create_new_spreadsheet(user_id, title=title)
     if check_user_in_database(user_id) is None:
         add_user_to_db(telegram_id=user_id)

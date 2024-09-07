@@ -41,10 +41,8 @@ async def get_google_sheets_service(user_telegram_id: int):
     """Returns a Google Sheets API service object."""
     user = check_user_in_database(user_telegram_id)
     if user and user.access_token:
-      # token = ast.literal_eval(user.access_token)
       token = json.loads(user.access_token)
-      print(token)
-
+      # print(token)
       creds = Credentials.from_authorized_user_info(token, SCOPES)
       print(creds)
       return build('sheets', 'v4', credentials=creds)
@@ -313,7 +311,8 @@ async def delete_spreadsheet_from_sheets(user_id: int, spreadsheet_id: str):
   try:
     user = check_user_in_database(user_id)
     if user and user.access_token:
-      creds = Credentials.from_authorized_user_file(user.access_token, SCOPES)
+      token = json.loads(user.access_token)
+      creds = Credentials.from_authorized_user_info(token, SCOPES)
       drive_service = build('drive', 'v3', credentials=creds)
       drive_service.files().delete(fileId=spreadsheet_id).execute()
       print("The spreadsheet was deleted successfully")

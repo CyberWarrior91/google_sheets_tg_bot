@@ -13,12 +13,10 @@ from bot_routers.main_router import router as main_router
 # from bot_routers.utils import bot
 from aiogram.utils.chat_action import ChatActionMiddleware
 from bot_routers.middleware.auth_middleware import AuthorizationMiddleware
+from bot_routers.utils import bot
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", None)
-
-bot = Bot(token=BOT_TOKEN)
 
 dp = Dispatcher()
 dp.message.outer_middleware(AuthorizationMiddleware())
@@ -33,6 +31,7 @@ async def main():
             types.BotCommand(command="add_expense", description="Добавить расход в таблицу"),
             types.BotCommand(command="this_month_expenses", description="Посмотреть расходы за этот месяц"),
             types.BotCommand(command="last_ten_expenses", description="Последние 10 трат в этом месяце"),
+            types.BotCommand(command="manage_google_acc", description="Изменить доступ к своему Google аккаунту")
             # types.BotCommand(command="view_specific_month_expenses", description="Посмотреть расходы за определенный месяц"),
             ]
     )
