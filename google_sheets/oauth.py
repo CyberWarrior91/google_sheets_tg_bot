@@ -95,7 +95,7 @@ async def oauth2callback(request: Request):
     revoke_url = f'{request.url_for("revoke")}?telegram_id={telegram_id}'
     return HTMLResponse(
     f"<p>Авторизация прошла успешно! Для возврата в бот, нажмите на " +
-    f"<a href='{BOT_URL}'>кнопку</a>"
+    f"<a href='{BOT_URL}'>кнопку</a> или закройте данное окно в браузере"
     "<br>"
     f"Чтобы отозвать доступ к своему Google аккаунту, нажмите <a href='{revoke_url}'>здесь</a></p>")
   return PlainTextResponse("Авторизация неуспешна")

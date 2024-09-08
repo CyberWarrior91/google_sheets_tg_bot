@@ -1,10 +1,8 @@
-from aiogram import Router, types, F, html
+from aiogram import Router, types, F
 from aiogram.filters.command import Command
 from aiogram.fsm.state import default_state
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
-from aiogram.utils.deep_linking import create_start_link
-from aiogram.enums.parse_mode import ParseMode
 
 router = Router()
 
@@ -12,10 +10,11 @@ router = Router()
 async def start_command(message: types.Message):
     text = "Добро пожаловать в бот по учету расходов в таблице Google Sheets!\n\n"\
             "Список команд:\n"\
-            "🌟/table создание и управление таблицами с расходами\n"\
-            "🌟/add_expense добавить новый расход в таблицу\n"\
-            "🌟/this_month_expenses посмотреть общий расход по таблице за последний месяц\n"\
-            "🌟/last_ten_expenses посмотреть последние 10 трат по таблице\n"
+            "💡/table создание и управление таблицами с расходами\n"\
+            "✍️/add_expense добавить новый расход в таблицу\n"\
+            "🗓/this_month_expenses посмотреть общий расход по таблице за последний месяц\n"\
+            "💸/last_ten_expenses посмотреть последние 10 трат по таблице\n"\
+            "⚙️/manage_google_acc изменить доступ к своему Google аккаунту"
     await message.answer(text=text)
 
 @router.message(StateFilter(None), Command(commands=["cancel"]))
@@ -36,4 +35,3 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
         text="Действие отменено",
         reply_markup=types.ReplyKeyboardRemove()
     )
-

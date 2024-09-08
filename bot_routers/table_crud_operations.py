@@ -11,7 +11,6 @@ from google_sheets.google_sheets_operations import (
     get_sheet
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.methods.send_chat_action import SendChatAction
 from .utils import (
     bot,
     table_name_false_input,
@@ -46,15 +45,15 @@ class Table(StatesGroup):
 async def table_command(message: types.Message):
     builder = InlineKeyboardBuilder()
     builder.row(
-        types.InlineKeyboardButton(text="Создать новую табличку с расходами", callback_data="add_table")
+        types.InlineKeyboardButton(text="⭐️ Создать новую табличку с расходами", callback_data="add_table")
     )
     builder.row(
-        types.InlineKeyboardButton(text="Изменить имя таблицы", callback_data="edit_table"),
-        types.InlineKeyboardButton(text="Получить ссылку на таблицу", callback_data="view_table")
+        types.InlineKeyboardButton(text="✏️ Изменить имя таблицы", callback_data="edit_table"),
+        types.InlineKeyboardButton(text="🔍 Получить ссылку на таблицу", callback_data="view_table")
         
     )
     builder.row(
-        types.InlineKeyboardButton(text="Удалить таблицу", callback_data="delete_table")
+        types.InlineKeyboardButton(text="❌ Удалить таблицу", callback_data="delete_table")
     )
     await message.reply("Выберите, что хотите сделать:", reply_markup=builder.as_markup())
 
