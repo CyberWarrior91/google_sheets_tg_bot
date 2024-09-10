@@ -1,4 +1,4 @@
-from database.get_db import get_async_session, get_session
+from database.get_db import get_session
 from database.models import User, Spreadsheet, Sheet
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
@@ -20,16 +20,6 @@ def check_user_in_database(telegram_id: int):
         )
         user = user_in_db.first()
         return user if user else None
-
-# async def check_user_in_db(telegram_id: int):
-#     async for session in get_async_session():
-#         user_in_db = await session.scalars(
-#             select(User).where(
-#                 User.telegram_id==telegram_id
-#                 ).options(joinedload(User.spreadsheets))
-#         )
-#         user = user_in_db.first()
-#         return user if user else None
 
 def add_token_to_user(telegram_id: int, token: str):
     for session in get_session():
@@ -55,8 +45,6 @@ def remove_token_from_user_in_db(telegram_id):
         print("The token was removed successfully")
         return True
 
-
-
 def add_spreadsheet_to_db(google_unique_id: str, name: str, user_telegram_id: int):
     for session in get_session():
         new_spdsheet = Spreadsheet(
@@ -81,7 +69,6 @@ def add_sheet_to_db(google_unique_id: int, name: str, spreadsheet_id: str):
         print("The sheet was added successfully")
         return new_sheet
 
-
 def get_spreadsheets_by_user(user_telegram_id: int):
     curr_user = check_user_in_database(telegram_id=user_telegram_id)
     if curr_user:
@@ -102,7 +89,6 @@ def get_sheets_by_spreadsheet_id(s_id: str):
             return [None]
         return [sheet.name for sheet in spreadsheet.sheets]
 
-
 def get_spreadsheet_id_by_name(name: str):
     for session in get_session():
         s_in_db = session.scalars(select(Spreadsheet).where(Spreadsheet.name==name))
@@ -121,6 +107,7 @@ def edit_spreadsheet_name_in_db(id: str, new_name: str):
         spreadsheet.name = new_name
         session.commit()
         print("The spreadsheet name was changed successfully")
+        return spreadsheet
 
 def delete_spreadsheet_from_db(id: str):
     for session in get_session():

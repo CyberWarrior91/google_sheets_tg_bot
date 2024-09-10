@@ -50,7 +50,6 @@ async def add_new_expense_start(message: types.Message, state: FSMContext):
             'нажмите на "Создать новую табличку с расходами"'
         )
 
-
 @router.message(Expense.waiting_for_add_expense)
 async def add_expense_item_start(message: types.Message, state: FSMContext):
     s_id = get_spreadsheet_id_by_name(name=message.text)
@@ -94,7 +93,7 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
     sheets = get_sheets_by_spreadsheet_id(s_id=base_spreadsheet_id)
     todays_month_and_year = datetime.datetime.today().strftime("%m/%Y")
     if todays_month_and_year not in sheets:
-        sheet_id, sheet_name = await create_new_sheet(
+        sheet_id, sheet_name = create_new_sheet(
             message.from_user.id,
             spreadsheet_id=base_spreadsheet_id,
             title=todays_month_and_year
@@ -105,7 +104,7 @@ async def add_new_expense_amount(message: types.Message, state: FSMContext):
             name=sheet_name, 
             spreadsheet_id=base_spreadsheet_id
         )
-    await append_new_values(
+    append_new_values(
         message.from_user.id,
         spreadsheet_id=base_spreadsheet_id, 
         values_list=[user_data.get("expense_item", ""),
@@ -145,7 +144,7 @@ async def view_last_ten_expenses_success(message: types.Message, state: FSMConte
     table_id = get_spreadsheet_id_by_name(name=message.text)
     if table_id:
         sheets = get_sheets_by_spreadsheet_id(s_id=table_id)
-        result = await show_last_ten_expenses(
+        result = show_last_ten_expenses(
             message.from_user.id,
             table_id, 
             sheet_name=sheets[-1]
@@ -182,7 +181,7 @@ async def view_this_month_expenses_success(message: types.Message, state: FSMCon
     table_id = get_spreadsheet_id_by_name(name=message.text)
     if table_id:
         sheets = get_sheets_by_spreadsheet_id(s_id=table_id)    
-        result = await show_this_month_expenses(
+        result = show_this_month_expenses(
             message.from_user.id,
             table_id, 
             sheet_name=sheets[-1]

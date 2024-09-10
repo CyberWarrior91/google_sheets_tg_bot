@@ -23,9 +23,9 @@ class AuthorizationMiddleware(BaseMiddleware):
         user_id = event.from_user.id
         user = await self.is_user_authorized(user_id)
         if not user:
+            # If not, redirect to Google authorization flow
             auth_link = f"{FASTAPI_HOST}?telegram_id={user_id}"
             hyper_link = hlink("ССЫЛКА", auth_link)
-            # If not, redirect to Google authorization flow 
             await event.answer(
                 "Для начала использования бота, пожалуйста, авторизуйтесь через свой Google аккаунт: \n\n"
                 f"{hyper_link}", parse_mode="HTML"
@@ -35,7 +35,6 @@ class AuthorizationMiddleware(BaseMiddleware):
 
     async def is_user_authorized(self, user_id: int):
         # Check if the user has an associated access token 
-        # Replace this with your database query or token storage mechanism
         user = check_user_in_database(telegram_id=user_id)
         print(user)
         if not user:

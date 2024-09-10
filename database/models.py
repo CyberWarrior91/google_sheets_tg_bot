@@ -3,7 +3,7 @@ from sqlalchemy import Integer, String, ForeignKey, Text
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from typing import Optional, List
+from typing import List
 
 
 from sqlalchemy.orm import relationship

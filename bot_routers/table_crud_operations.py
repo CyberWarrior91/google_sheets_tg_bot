@@ -68,13 +68,18 @@ async def create_new_table(callback: types.CallbackQuery, state: FSMContext):
 @router.message(Table.create_waiting_for_title)
 async def parse_title(message: types.Message, state: FSMContext):
     title = message.text
+    user_id = message.from_user.id
+    spreadsheets_by_user = get_spreadsheets_by_user(user_id)
+    if title in spreadsheets_by_user:
+        await message.answer("Таблица с таким названием уже существует.\n"
+                             "Пожалуйста, выберите другое имя.")
+        return
     if len(title) > 35:
         await message.answer("Слишком длинное название для таблицы!\n"
                              "Пожалуйста, придумайте имя покороче (до 35 символов)")
         return
-    user_id = message.from_user.id
     await bot.send_chat_action(chat_id=message.chat.id, action="typing")
-    spreadsheet_id = await create_new_spreadsheet(user_id, title=title)
+    spreadsheet_id = create_new_spreadsheet(user_id, title=title)
     if check_user_in_database(user_id) is None:
         add_user_to_db(telegram_id=user_id)
     add_spreadsheet_to_db(
@@ -82,15 +87,15 @@ async def parse_title(message: types.Message, state: FSMContext):
         name=title,
         user_telegram_id=user_id
     )
-    sheet_id, sheet_name = await get_sheet(user_id, spreadsheet_id)
+    sheet_id, sheet_name = get_sheet(user_id, spreadsheet_id)
     add_sheet_to_db(google_unique_id=sheet_id, name=sheet_name, spreadsheet_id=spreadsheet_id)
-    table_url = await get_spreadsheet_url(user_id, spreadsheet_id)
+    table_url = get_spreadsheet_url(user_id, spreadsheet_id)
     hyper_link = hlink("ссылка", table_url)
     await message.answer(
         f'Название таблицы: "{title}". Таблица сохранена!\n\n'
         f'Вот {hyper_link} на вашу таблицу в Google Sheets\n\n'
-        "Чтобы добавить свой первый расход, отправьте команду /add_expense\n"
-        "\nЧтобы вернуться в главное меню, отправьте команду /start\n"
+        "Чтобы добавить свой первый расход, отправьте команду /add_expense\n\n"
+        "Чтобы вернуться в главное меню, отправьте команду /start\n"
         "Чтобы управлять таблицами, отправьте команду /table",
         parse_mode="HTML"
     )
@@ -140,7 +145,7 @@ async def change_title_success(message: types.Message, state: FSMContext):
         user_data = await state.get_data()
         await message.answer(f'Новое имя для таблицы: "{new_title}"')
         s_id = user_data["spreadsheet_id"]
-        await change_spreadsheet_name(message.from_user.id, s_id, new_title)
+        change_spreadsheet_name(message.from_user.id, s_id, new_title)
         edit_spreadsheet_name_in_db(id=s_id, new_name=new_title)
         await message.answer(f'Таблица была успешно переименована!')
         await message.answer(
@@ -171,7 +176,7 @@ async def view_expense_table(message: types.Message, state: FSMContext):
     table_name = message.text
     spreadsheet_id = get_spreadsheet_id_by_name(name=table_name)
     if spreadsheet_id:
-        table_url = await get_spreadsheet_url(message.from_user.id, spreadsheet_id)
+        table_url = get_spreadsheet_url(message.from_user.id, spreadsheet_id)
         hyper_link = hlink("ссылка", table_url)
         msg = f'Вот ваша {hyper_link} на таблицу!'
         await message.answer(msg, parse_mode="HTML")
@@ -227,7 +232,7 @@ async def delete_yes_answer(callback: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     spreadsheet_id = get_spreadsheet_id_by_name(user_data["table"])
     if delete_spreadsheet_from_db(spreadsheet_id) is True:
-        if await delete_spreadsheet_from_sheets(callback.from_user.id, spreadsheet_id) is True:
+        if delete_spreadsheet_from_sheets(callback.from_user.id, spreadsheet_id) is True:
             await callback.message.answer("Таблица была успешно удалена!")
         else:
             await callback.message.answer(
