@@ -6,6 +6,7 @@ from .oauth import SCOPES
 from google.oauth2.credentials import Credentials
 from database.db_crud_operations import check_user_in_database
 import json
+import pytz
 
 
 def get_google_sheets_service(user_telegram_id: int):
@@ -161,7 +162,8 @@ def append_new_values(
   """Adds a list of values to the specified range of a sheet"""
   try:
     service = get_google_sheets_service(user_id)
-    date = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+    msc_tz = pytz.timezone("Europe/Moscow")
+    date = datetime.datetime.now(msc_tz).strftime("%d-%m-%Y %H:%M")
     values_list.insert(0, date)
     body = {"values": [values_list]}
     result = (
