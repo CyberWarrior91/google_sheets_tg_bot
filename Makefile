@@ -1,12 +1,6 @@
 start-bot:
 	python3 -m bot_main
 
-create_adc:
-	gcloud auth application-default login
-
-run:
-	make start
-
 fastapi_dev:
 	python3 -m fastapi dev google_sheets/oauth.py
 
