@@ -13,18 +13,24 @@ Expense Revisor Bot - телеграм бот, интегрированный с
 
 **Требования:**
  
-В приложении используются следующие библиотеки и фреймворки:
+В приложении используются следующие зависимости:
  
 aiofiles==23.2.1
 
 aiogram==3.10.0
 
 aiohappyeyeballs==2.3.4
+
 aiohttp==3.9.0
+
 aiosignal==1.3.1
+
 annotated-types==0.7.0
+
 anyio==4.4.0
+
 async-timeout==4.0.3
+
 asyncpg==0.29.0
 attrs==23.2.0
 cachetools==5.4.0
