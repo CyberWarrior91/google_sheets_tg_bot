@@ -50,10 +50,10 @@ Expense Revisor Bot - телеграм бот, интегрированный с
 
 Также вам будет необходимо определить следующие переменные окружения в файле .env:
 
-BOT_TOKEN (токен вашего бота, который выдает <a href="https://t.me/BotFather">BotFather</a>)
-BOT_URL (ссылка на ваш Telegram бот)
-SECRET_KEY (секретный ключ для инициализации приложения FastAPI)
-DATABASE_URL (ссылка на соединение с базой данных PostgreSQL)
+- BOT_TOKEN (токен вашего бота, который выдает <a href="https://t.me/BotFather">BotFather</a>)
+- BOT_URL (ссылка на ваш Telegram бот)
+- SECRET_KEY (секретный ключ для инициализации приложения FastAPI)
+- DATABASE_URL (ссылка на соединение с базой данных PostgreSQL)
 
 ## Makefile
 
