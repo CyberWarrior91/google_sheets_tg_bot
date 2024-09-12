@@ -15,49 +15,28 @@ Expense Revisor Bot - телеграм бот, интегрированный с
  
 В приложении используются следующие зависимости:
  
-```aiogram==3.10.0
-
-aiohttp==3.9.0```
-
-fastapi==0.112.0
-
-fastapi-cli==0.0.5
-
-google-api-core==2.19.1
-
-google-api-python-client==2.137.0
-
-google-auth==2.32.0
-
-google-auth-httplib2==0.2.0
-
-google-auth-oauthlib==1.2.1
-
-googleapis-common-protos==1.63.2
-
-oauthlib==3.2.2
-
-psycopg2-binary==2.9.9
-
-pydantic==2.8.2
-
-pydantic_core==2.20.1
-
-pytz==2024.2
-
-PyYAML==6.0.1
-
-requests==2.32.3
-
-requests-oauthlib==2.0.0
-
-SQLAlchemy==2.0.31
-
-starlette==0.37.2
-
-urllib3==2.2.2
-
-uvicorn==0.30.5
+* aiogram==3.10.0
+* aiohttp==3.9.0
+* fastapi==0.112.0
+* fastapi-cli==0.0.5
+* google-api-core==2.19.1
+* google-api-python-client==2.137.0
+* google-auth==2.32.0
+* google-auth-httplib2==0.2.0
+* google-auth-oauthlib==1.2.1
+* googleapis-common-protos==1.63.2
+* oauthlib==3.2.2
+* psycopg2-binary==2.9.9
+* pydantic==2.8.2
+* pydantic_core==2.20.1
+* pytz==2024.2
+* PyYAML==6.0.1
+* requests==2.32.3
+* requests-oauthlib==2.0.0
+* SQLAlchemy==2.0.31
+* starlette==0.37.2
+* urllib3==2.2.2
+* uvicorn==0.30.5
 
 Основные библиотеки: google-api-python-client, google-auth-httplib2, google-auth-oauthlib (для обращения к методам Google Sheets по API), FastAPI (создание сервера для прохождения авторизации для Google) и aiogram (для манипуляций с Telegram ботом)
 
